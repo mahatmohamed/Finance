@@ -1,0 +1,165 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <h2 class="mb-5">Data Analysis</h2>
+  <div class="row">
+    <!-- Add these lines to create the buttons -->
+<div class="container mb-4">
+    <a href="{% url 'add_income' %}" class="btn btn-primary">Add Income</a>
+    <a href="{% url 'expense' %}" class="btn btn-danger">Add Expense</a>
+    <a href="{% url 'download_analysis_pdf' %}" class="btn btn-secondary">Download PDF</a>
+</div>
+<!-- End of added lines -->
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-5">
+        <div class="card-header">Total Income</div>
+        <div class="card-body">
+          <h3 class="card-title">{{ total_income }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-danger mb-5">
+        <div class="card-header">Total Expenses</div>
+        <div class="card-body">
+          <h3 class="card-title">{{ total_expenses }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-5">
+        <div class="card-header">Savings</div>
+        <div class="card-body">
+          <h3 class="card-title">{{ savings }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+   <!-- Line chart -->
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="mb-3">Data in Graphs</h3>
+      <div class="chart-container">
+          <canvas id="barGraph"></canvas>
+      </div>
+    </div>
+  </div>
+
+
+ 
+  <h3 class="mt-5 mb-3">Income</h3>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Amount</th>
+          <th scope="col">Date</th>
+          <th scope="col">Frequency</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for income in income_list %}
+        <tr>
+          <td>{{ income.amount }}</td>
+          <td>{{ income.date }}</td>
+          <td>{{ income.frequency }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="mt-5 mb-3">Expenses by Category</h3>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Category</th>
+          <th scope="col">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category_expense in expense_df %}
+        <tr>
+          <td>{{ category_expense.name }}</td>
+          <td>{{ category_expense.amount }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="mt-5 mb-3">Expenses</h3>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Amount</th>
+          <th scope="col">Date</th>
+          <th scope="col">Category</th>
+          <th scope="col">Frequency</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for expense in expense_list %}
+        <tr>
+          <td>{{ expense.amount }}</td>
+          <td>{{ expense.date }}</td>
+          <td>{{ expense.category__name }}</td>
+          <td>{{ expense.frequency }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    // Get the canvas element and create a chart context
+    const barGraph = document.getElementById('barGraph').getContext('2d');
+
+    // Create the line chart
+    const chart = new Chart(barGraph, {
+        type: 'line',
+        data: {
+            labels: ['Total Income', 'Total Expenses', 'Savings'],
+            datasets: [{
+                label: 'Amount',
+                data: [{{ total_income }}, {{ total_expenses }}, {{ savings }}],
+                backgroundColor: [
+                    'rgba(0, 123, 255, 0.5)', // Blue for Total Income
+                    'rgba(255, 0, 0, 0.5)', // Red for Total Expenses
+                    'rgba(40, 167, 69, 0.5)' // Green for Savings
+                ],
+                borderColor: [
+                    'rgba(0, 123, 255, 1)', // Blue for Total Income
+                    'rgba(255, 0, 0, 1)', // Red for Total Expenses
+                    'rgba(40, 167, 69, 1)' // Green for Savings
+                ],
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+
+
+
+{% endblock %}
+
+
+

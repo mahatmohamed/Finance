@@ -1,0 +1,63 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="main-body">
+    <div class="row gutters-sm">
+      <div class="col-md-4 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex flex-column align-items-center text-center">
+              <img src="{{ user.userprofile.image.url }}" alt="Profile Picture" class="img-thumbnail" width="150">
+              <div class="mt-3">
+                <h4>{{ user.userprofile.first_name }} {{ user.userprofile.last_name }}</h4>
+                <p class="text-secondary mb-1"><strong>Phone:</strong>{{ user.userprofile.phone }}</p>
+                <p class="text-muted font-size-sm"><strong>Address:</strong>{{ user.userprofile.address }}</p>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Income</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" style="width: {{ income_percentage|floatformat:2 }}%;" aria-valuenow="{{ income_percentage|floatformat:2 }}" aria-valuemin="0" aria-valuemax="100">{{ income_percentage|floatformat:2 }}%</div>
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Expense</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <div class="progress">
+                  <div class="progress-bar bg-danger" role="progressbar" style="width: {{ expense_percentage|floatformat:2 }}%;" aria-valuenow="{{ expense_percentage|floatformat:2 }}" aria-valuemin="0" aria-valuemax="100">{{ expense_percentage|floatformat:2 }}%</div>
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Savings</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <div class="progress">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{savings_percentage|floatformat:2 }}%;" aria-valuenow="{{ savings_percentage|floatformat:2 }}" aria-valuemin="0" aria-valuemax="100">{{ savings_percentage|floatformat:2 }}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
