@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Income, Category, Expense
+from .models import Income, Category, Expense, Subcategory
 import pandas as pd
 from django.db.models import Sum
 from django.template import loader
@@ -29,15 +29,27 @@ def add_expense(request):
         amount = request.POST.get('amount', '')
         date = request.POST.get('date', '')
         category_id = request.POST.get('category', '')
+        subcategory_id = request.POST.get('subcategory', '')
+        new_subcategory_name = request.POST.get('new_subcategory', '')
+        description = request.POST.get('description', '')
         frequency = request.POST.get('frequency', '')
 
         category = Category.objects.get(id=category_id)
+
+        if subcategory_id == 'new_subcategory':
+            # Create a new Subcategory if 'new_subcategory' is received
+            subcategory = Subcategory.objects.create(name=new_subcategory_name, category=category)
+        else:
+            # Otherwise, retrieve the existing Subcategory with the given id
+            subcategory = Subcategory.objects.get(id=subcategory_id)
 
         expense = Expense(
             user=request.user,
             amount=amount,
             date=date,
             category=category,
+            subcategory=subcategory,
+            description=description,
             frequency=frequency
         )
         expense.save()
@@ -47,7 +59,8 @@ def add_expense(request):
 
     else:
         categories = Category.objects.all()
-        return render(request, 'money/expense.html', {'categories': categories})
+        subcategories = Subcategory.objects.all()
+        return render(request, 'money/expense.html', {'categories': categories, 'subcategories': subcategories})
 
 
 def get_analysis_data(user):
@@ -58,17 +71,30 @@ def get_analysis_data(user):
     total_expenses = expense_qs.aggregate(total=Sum('amount'))['total'] or 0
     savings = total_income - total_expenses
 
+    category_list = Category.objects.all().values()
+
     if expense_qs.exists():
         expense_df = pd.DataFrame(list(expense_qs.values('amount', 'category_id')))
-        category_df = pd.DataFrame(list(Category.objects.all().values()))
+        category_df = pd.DataFrame(list(category_list))
+
+        expense_df['category_id'] = expense_df['category_id'].fillna(-1).astype(int)
+        category_df['id'] = category_df['id'].astype(int)
+
         expense_df = expense_df.merge(category_df, left_on='category_id', right_on='id', how='left')
         expense_df = expense_df.groupby(['name'])['amount'].sum().reset_index()
+
+        # Create a dictionary with category names as keys and amounts as values
+        category_amounts = dict(zip(expense_df['name'], expense_df['amount']))
+
+        # Add the amount to each category object in the category_list
+        for category in category_list:
+            category['amount'] = category_amounts.get(category['name'], 0)
     else:
         expense_df = pd.DataFrame(columns=['name', 'amount'])
 
     income_list = income_qs.values()
-    expense_list = expense_qs.values('id', 'amount', 'date', 'frequency', 'category__name')
-    category_list = Category.objects.all().values()
+    expense_list = expense_qs.values('id', 'amount', 'date', 'frequency', 'category__name', 'subcategory__name')
+
 
     income_percentage = 0
     expense_percentage = 0
@@ -91,6 +117,8 @@ def get_analysis_data(user):
         'expense_percentage': expense_percentage,
         'savings_percentage': savings_percentage,
     }
+
+
 
 
 def data_analysis(request):
