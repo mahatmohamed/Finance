@@ -6,21 +6,26 @@ from .forms import UserProfileForm
 from .models import UserProfile
 from money.views import get_analysis_data
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+
 
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            
-            # Create a UserProfile for the new user
-            profile = UserProfile(user=user)
-            profile.save()
-            
-            messages.success(request, f'Your account has been created! You can now log in.')
-            return redirect('login')
+            # Log the user in after successful registration.
+            login(request, user)
+            messages.success(request, 'You have successfully registered and are now logged in.')
+            return redirect('your_app:index')
+        else:
+            if User.objects.filter(username=form.data['username']).exists():
+                messages.warning(request, 'This username is already registered. Please choose another username.')
+            if form.data['password1'] != form.data['password2']:
+                messages.error(request, 'Passwords do not match. Please enter the same password in both fields.')
     else:
         form = RegistrationForm()
+
     return render(request, 'users/register.html', {'form': form})
 
 

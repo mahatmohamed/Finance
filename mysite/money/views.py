@@ -144,3 +144,6 @@ def download_analysis_pdf(request):
     response['Content-Disposition'] = 'attachment; filename="analysis.pdf"'
 
     return response
+
+def about(request):
+    return render(request, 'money/about.html')
