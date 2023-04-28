@@ -17,7 +17,7 @@ def register(request):
             # Log the user in after successful registration.
             login(request, user)
             messages.success(request, 'You have successfully registered and are now logged in.')
-            return redirect('your_app:index')
+            return redirect('data_analysis')
         else:
             if User.objects.filter(username=form.data['username']).exists():
                 messages.warning(request, 'This username is already registered. Please choose another username.')
