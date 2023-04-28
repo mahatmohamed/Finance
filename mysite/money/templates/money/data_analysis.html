@@ -127,6 +127,13 @@
   // Get the canvas element and create a chart context
   const barGraph = document.getElementById('barGraph').getContext('2d');
 
+  // Store the data in a separate object
+  const chartData = {
+    total_income: Number('{{ total_income }}'),
+    total_expenses: Number('{{ total_expenses }}'),
+    savings: Number('{{ savings }}')
+  };
+
   // Create the line chart
   const chart = new Chart(barGraph, {
       type: 'line',
@@ -134,7 +141,7 @@
           labels: ['Total Income', 'Total Expenses', 'Savings'],
           datasets: [{
               label: 'Amount',
-              data: [{{ total_income }}, {{ total_expenses }}, {{ savings }}],
+              data: [chartData.total_income, chartData.total_expenses, chartData.savings],
               backgroundColor: [
                   'rgba(0, 123, 255, 0.5)', // Blue for Total Income
                   'rgba(255, 0, 0, 0.5)', // Red for Total Expenses
@@ -161,4 +168,6 @@
       }
   });
 </script>
+
+
 {% endblock %}
