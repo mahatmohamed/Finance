@@ -1,10 +1,16 @@
-from django.shortcuts import render, redirect
-from .models import Income, Category, Expense, Subcategory
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Income, Category, Expense, Subcategory, Budget
 import pandas as pd
-from django.db.models import Sum
+from .models import Category, Expense
+from datetime import date
+from django.db.models import Sum, F, FloatField
 from django.template import loader
 import pdfkit
+from django.db.models import Q, Sum
+from django.contrib import messages
+from .forms import BudgetForm
 from django.http import HttpResponse
+from dateutil.relativedelta import relativedelta
 
 
 def add_income(request):
@@ -30,17 +36,21 @@ def add_expense(request):
         date = request.POST.get('date', '')
         category_id = request.POST.get('category', '')
         subcategory_id = request.POST.get('subcategory', '')
+        new_category_name = request.POST.get('new_category', '')  # Get the new category name
         new_subcategory_name = request.POST.get('new_subcategory', '')
         description = request.POST.get('description', '')
         frequency = request.POST.get('frequency', '')
 
-        category = Category.objects.get(id=category_id)
+        # Handle the case when the category_id is 'new_category'
+        if category_id == 'new_category':
+            category = Category.objects.create(name=new_category_name)
+        else:
+            category = Category.objects.get(id=category_id)
 
+        # Handle the case when the subcategory_id is 'new_subcategory'
         if subcategory_id == 'new_subcategory':
-            # Create a new Subcategory if 'new_subcategory' is received
             subcategory = Subcategory.objects.create(name=new_subcategory_name, category=category)
         else:
-            # Otherwise, retrieve the existing Subcategory with the given id
             subcategory = Subcategory.objects.get(id=subcategory_id)
 
         expense = Expense(
@@ -54,13 +64,13 @@ def add_expense(request):
         )
         expense.save()
 
-        # Redirect to the data_analysis page after successfully saving the expense
         return redirect('data_analysis')
 
     else:
         categories = Category.objects.all()
         subcategories = Subcategory.objects.all()
         return render(request, 'money/expense.html', {'categories': categories, 'subcategories': subcategories})
+
 
 
 def get_analysis_data(user):
@@ -70,6 +80,9 @@ def get_analysis_data(user):
     total_income = income_qs.aggregate(total=Sum('amount'))['total'] or 0
     total_expenses = expense_qs.aggregate(total=Sum('amount'))['total'] or 0
     savings = total_income - total_expenses
+     # Round the total_expenses and savings to 2 decimal places
+    total_expenses = round(total_expenses, 2)
+    savings = round(savings, 2)
 
     category_list = Category.objects.all().values()
 
@@ -147,3 +160,94 @@ def download_analysis_pdf(request):
 
 def about(request):
     return render(request, 'money/about.html')
+
+def terms_and_privacy(request):
+    return render(request, 'money/terms_and_privacy.html')
+
+
+
+def add_budget(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if request.method == 'POST':
+        category_id = request.POST.get('category', '')
+        amount = request.POST.get('amount', '')
+        start_date = request.POST.get('start_date', '')
+        end_date = request.POST.get('end_date', '')
+
+        category = Category.objects.get(id=category_id)
+        budget = Budget(user=request.user, category=category, amount=amount, start_date=start_date, end_date=end_date)
+        budget.save()
+
+        return redirect('view_budgets')
+
+    categories = Category.objects.all()
+    return render(request, 'money/add_budget.html', {'categories': categories})
+
+def view_budgets(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    budgets = Budget.objects.filter(user=request.user)
+    return render(request, 'money/view_budgets.html', {'budgets': budgets})
+def edit_budget(request, budget_id):
+    budget = get_object_or_404(Budget, pk=budget_id)
+    
+    if request.method == 'POST':
+        form = BudgetForm(request.POST, instance=budget)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Budget updated successfully.')
+            return redirect('view_budgets')
+        else:
+            messages.error(request, 'There was an error updating the budget.')
+    else:
+        form = BudgetForm(instance=budget)
+    
+    return render(request, 'money/edit_budget.html', {'form': form, 'budget_id': budget_id})
+
+def delete_budget(request, budget_id):
+    budget = get_object_or_404(Budget, pk=budget_id)
+    
+    if request.method == 'POST':
+        budget.delete()
+        messages.success(request, 'Budget deleted successfully.')
+        return redirect('view_budgets')
+    
+    return render(request, 'money/delete_budget.html', {'budget': budget})
+
+
+
+
+
+def view_bills(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    expenses = Expense.objects.filter(user=request.user)
+    bills = []
+
+    for expense in expenses:
+        next_due_date = expense.date
+        today = date.today()
+
+        # Find the next due date
+        while next_due_date <= today:
+            next_due_date += relativedelta(months=1)
+
+        days_left = (next_due_date - today).days
+        bills.append({
+            'expense': expense,
+            'next_due_date': next_due_date,
+            'days_left': days_left
+        })
+
+    categories = Category.objects.annotate(total_amount=Sum(F('expense__amount'), filter=Q(expense__user=request.user), output_field=FloatField()))
+
+    for category in categories:
+        if category.total_amount is not None:
+            category.total_amount = round(category.total_amount, 2)
+
+    return render(request, 'money/view_bills.html', {'bills': bills, 'categories': categories})

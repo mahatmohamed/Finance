@@ -35,4 +35,10 @@ urlpatterns = [
     path('logout/', authentication_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('edit_profile/', user_views.edit_profile, name='edit_profile'),
     path('about/', views.about, name='about'),
+    path('terms-and-privacy/', views.terms_and_privacy, name='terms_and_privacy'),
+    path('add_budget/', views.add_budget, name='add_budget'),
+    path('view_budgets/', views.view_budgets, name='view_budgets'),
+    path('edit_budget/<int:budget_id>/', views.edit_budget, name='edit_budget'),
+    path('delete_budget/<int:budget_id>/', views.delete_budget, name='delete_budget'),
+    path('view_bills/', views.view_bills, name='view_bills'),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

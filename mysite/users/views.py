@@ -75,3 +75,4 @@ def edit_profile(request):
         form = UserProfileForm(instance=profile)
 
     return render(request, 'users/edit_profile.html', {'form': form})
+

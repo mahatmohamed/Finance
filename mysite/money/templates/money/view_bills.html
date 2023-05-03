@@ -1,0 +1,49 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Bills</h1>
+
+    <div class="accordion" id="billsAccordion">
+        {% for category in categories %}
+        <div class="card">
+            <div class="card-header" id="heading{{ category.id }}">
+                <h2 class="mb-0">
+                    <button class="btn btn-link text-decoration-none" type="button" data-toggle="collapse" data-target="#collapse{{ category.id }}" aria-expanded="true" aria-controls="collapse{{ category.id }}">
+                        {{ category.name }} (Total: {{ category.total_amount }})
+                    </button>
+                </h2>
+            </div>
+            <div id="collapse{{ category.id }}" class="collapse" aria-labelledby="heading{{ category.id }}" data-parent="#billsAccordion">
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Subcategory</th>
+                                <th>Amount</th>
+                                <th>Next Due Date</th>
+                                <th>Days Left</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in bills %}
+                            {% if bill.expense.category.id == category.id %}
+                            <tr>
+                                <td>{{ bill.expense.description }}</td>
+                                <td>{{ bill.expense.subcategory }}</td>
+                                <td>{{ bill.expense.amount }}</td>
+                                <td>{{ bill.next_due_date }}</td>
+                                <td>{{ bill.days_left }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

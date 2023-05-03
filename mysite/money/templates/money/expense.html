@@ -24,8 +24,7 @@
       </select>
       <input type="text" class="form-control mt-2" id="category_name" name="category_name" placeholder="New category name..." hidden>
     </div>
-    <div class="form-group"> 
-      <!-- Added Subcategory Field -->
+    <div class="form-group">
       <label for="subcategory">Subcategory</label>
       <select class="form-control" id="subcategory" name="subcategory" required>
         <option value="">Choose subcategory</option>
@@ -53,7 +52,6 @@
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
 </div>
-
 <script type="text/javascript">
   $(document).ready(function () {
     // Show or hide the input field for adding new category
@@ -75,4 +73,5 @@
     });
   });
 </script>
+
 {% endblock %}

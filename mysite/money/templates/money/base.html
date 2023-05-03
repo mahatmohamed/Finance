@@ -42,6 +42,13 @@
             <li class="nav-item">
               <a class="nav-link text-white" href="{% url 'data_analysis' %}">Dashboard</a>
             </li>
+           
+            <li class="nav-item">
+              <a class="nav-link text-white" href="{% url 'view_budgets' %}">Budgets </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="{% url 'view_bills' %}">Bills </a>
+            </li>
             <li class="nav-item ">
               <a class="nav-link text-white" href="{% url 'user_profile' %}">Profile</a>
             </li>
@@ -93,7 +100,7 @@
             <span class="text-muted">&copy; 2023 Personal Finance Manager. All rights reserved.</span>
           </div>
           <div class="col-md-6 text-right">
-            <a href="#" class="text-muted">Terms of Service</a> | <a href="#" class="text-muted">Privacy Policy</a>
+            <a href="{% url 'terms_and_privacy' %}" class="text-muted">Terms of Service</a> | <a href="#" class="text-muted">Privacy Policy</a>
           </div>
         </div>
       </div>
