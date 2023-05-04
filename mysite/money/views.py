@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Income, Category, Expense, Subcategory, Budget
+from .models import Income, Category, Expense, Subcategory, Budget,Goal
 import pandas as pd
 from .models import Category, Expense
 from datetime import date
@@ -8,7 +8,7 @@ from django.template import loader
 import pdfkit
 from django.db.models import Q, Sum
 from django.contrib import messages
-from .forms import BudgetForm
+from .forms import BudgetForm,GoalForm, UpdateGoalProgressForm
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 
@@ -19,16 +19,16 @@ def add_income(request):
 
     if request.method == 'POST':
         # Process the submitted form data here
+        source = request.POST.get('source', '')  # Update this line
         amount = request.POST.get('amount', '')
         date = request.POST.get('date', '')
         frequency = request.POST.get('frequency', '')
-        income = Income(user=request.user, amount=amount, date=date, frequency=frequency)
+        income = Income(user=request.user, source=source, amount=amount, date=date, frequency=frequency)  # Update this line
         income.save()
 
         # Redirect to the data_analysis page after successfully saving the income
         return redirect('data_analysis')
     return render(request, 'money/income.html')
-
 
 def add_expense(request):
     if request.method == 'POST':
@@ -191,6 +191,7 @@ def view_budgets(request):
 
     budgets = Budget.objects.filter(user=request.user)
     return render(request, 'money/view_budgets.html', {'budgets': budgets})
+
 def edit_budget(request, budget_id):
     budget = get_object_or_404(Budget, pk=budget_id)
     
@@ -220,8 +221,6 @@ def delete_budget(request, budget_id):
 
 
 
-
-
 def view_bills(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -244,10 +243,102 @@ def view_bills(request):
             'days_left': days_left
         })
 
-    categories = Category.objects.annotate(total_amount=Sum(F('expense__amount'), filter=Q(expense__user=request.user), output_field=FloatField()))
+    # Filter bills by category
+    category_id = request.GET.get('category')
+    if category_id:
+        bills = [b for b in bills if b['expense'].category.id == int(category_id)]
+
+    # Filter bills by status
+    status = request.GET.get('status')
+    if status == 'overdue':
+        bills = [b for b in bills if b['days_left'] < 0]
+    elif status == 'upcoming':
+        bills = [b for b in bills if 0 <= b['days_left'] <= 30]
+    elif status == 'paid':
+        bills = [b for b in bills if b['expense'].is_paid]
+
+    # Sort bills
+    sort_by = request.GET.get('sort_by')
+    if sort_by == 'due_date':
+        bills = sorted(bills, key=lambda x: x['next_due_date'])
+    elif sort_by == 'amount':
+        bills = sorted(bills, key=lambda x: x['expense'].amount)
+    elif sort_by == 'category':
+       bills = sorted([b for b in bills if b['expense'].category], key=lambda x: x['expense'].category.name)
+
+
+    categories = Category.objects.annotate(
+        total_amount=Sum(F('expense__amount'), filter=Q(expense__user=request.user), output_field=FloatField()))
 
     for category in categories:
         if category.total_amount is not None:
             category.total_amount = round(category.total_amount, 2)
 
-    return render(request, 'money/view_bills.html', {'bills': bills, 'categories': categories})
+    return render(request, 'money/view_bills.html', {'bills': bills, 'categories': categories, 'status': status, 'sort_by': sort_by})
+
+
+
+# Add Goal
+def add_goal(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = GoalForm(request.POST)
+
+        if form.is_valid():
+            goal = form.save(commit=False)
+            goal.user = request.user
+            goal.save()
+            messages.success(request, 'Financial goal added successfully!')
+            return redirect('view_goals')
+        else:
+            messages.error(request, 'Please correct the errors in the form.')
+
+    else:
+        form = GoalForm()
+
+    return render(request, 'money/add_goal.html', {'form': form})
+# View Goals
+def view_goals(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    goals = Goal.objects.filter(user=request.user)
+    for goal in goals:
+        goal.progress = (goal.current_amount / goal.target_amount) * 100
+    return render(request, 'money/view_goals.html', {'goals': goals})
+def update_goal_progress(request, goal_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+
+    if request.method == 'POST':
+        form = UpdateGoalProgressForm(request.POST, instance=goal)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Goal progress updated successfully!')
+            return redirect('view_goals')
+        else:
+            messages.error(request, 'Please correct the errors in the form.')
+    else:
+        form = UpdateGoalProgressForm(instance=goal)
+
+    return render(request, 'money/update_goal_progress.html', {'form': form, 'goal': goal})
+
+def edit_goal(request, goal_id):
+    goal = get_object_or_404(Goal, pk=goal_id)
+    if request.method == 'POST':
+        form = GoalForm(request.POST, instance=goal)
+        if form.is_valid():
+            form.save()
+            return redirect('view_goals')
+    else:
+        form = GoalForm(instance=goal)
+    return render(request, 'money/edit_goal.html', {'form': form, 'goal': goal})
+
+def delete_goal(request, goal_id):
+    goal = get_object_or_404(Goal, pk=goal_id)
+    goal.delete()
+    return redirect('view_goals')

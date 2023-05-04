@@ -1,0 +1,24 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Update Goal Progress: {{ goal.title }}</h2>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              {{ form.as_p }}
+              <div class="form-group text-right mt-4">
+                <button type="submit" class="btn btn-primary">Update Progress</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

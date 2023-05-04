@@ -1,0 +1,78 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4 text-center">Add Goal</h1>
+    <p class="lead text-center">Please enter the details of your financial goal below. This will help you track your progress and stay motivated towards achieving it.</p>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <form method="post" class="needs-validation mx-auto" novalidate style="max-width: 600px;">
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+            <div class="col-md-12 mb-3">
+                <label for="{{ field.auto_id }}" class="form-label">{{ field.label }} <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="top" title="{{ field.help_text }}"></i></label>
+                {% if field.field.widget.input_type == 'select' %}
+                    {{ field }}
+                {% else %}
+                    <input type="{{ field.field.widget.input_type }}" class="form-control" id="{{ field.auto_id }}" name="{{ field.html_name }}" value="{{ field.value }}" required {% if field.auto_id == "id_target_date" %}data-bs-toggle="datepicker"{% endif %}>
+                {% endif %}
+                <div class="invalid-feedback">
+                    {{ field.errors|striptags }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Add Goal</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // Initialize datepicker
+        var datepickers = document.querySelectorAll('[data-bs-toggle="datepicker"]')
+        datepickers.forEach(function (datepicker) {
+            new Datepicker(datepicker, {
+                autohide: true
+            })
+        })
+
+    })()
+</script>
+{% endblock %}

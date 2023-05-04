@@ -1,0 +1,59 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+
+
+
+<div class="container">
+    <h1 class="my-4">Financial Goals</h1>
+    <p class="lead">Track your progress and stay motivated towards achieving your financial goals by adding and managing them below.</p>
+    <a href="{% url 'add_goal' %}" class="btn btn-primary mb-3">Add Goal</a>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Target Amount</th>
+                    <th>Target Date</th>
+                    <th>Current Amount</th>
+                    <th>Update</th>
+                    <th>Progress</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for goal in goals %}
+                <tr>
+                    <td>{{ goal.category }}</td>
+                    <td>{{ goal.title }}</td>
+                    <td>{{ goal.target_amount }}</td>
+                    <td>{{ goal.target_date }}</td>
+                    <td>{{ goal.current_amount }}</td>
+                    <td><a href="{% url 'update_goal_progress' goal.id %}" class="btn btn-primary btn-sm">Update Progress</a></td>
+                    <td>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar {% if goal.progress < 25 %}progress-bar-red{% elif goal.progress < 75 %}progress-bar-orange{% else %}progress-bar-green{% endif %}" id="progress-bar" role="progressbar" aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100">{{ goal.progress }}%</div>
+                          </div>
+                          
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="actionsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="actionsMenu">
+                                <a class="dropdown-item" href="{% url 'edit_goal' goal.id %}">Edit</a>
+                                <a class="dropdown-item" href="{% url 'delete_goal' goal.id %}">Delete</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+  
+{% endblock %}

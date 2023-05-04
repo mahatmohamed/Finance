@@ -26,7 +26,19 @@
     .content-container {
       flex: 1;
     }
+    <!--Progress bar Colors section-->
+    .progress-bar-red {
+      background-color: red;
+    }
+  
+    .progress-bar-orange {
+      background-color: orange;
+    }
+  
+    .progress-bar-green {
+      background-color: green;}
   </style>
+  
 </head>
 
 <body>
@@ -45,6 +57,9 @@
            
             <li class="nav-item">
               <a class="nav-link text-white" href="{% url 'view_budgets' %}">Budgets </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="{% url 'view_goals' %}">Financial </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-white" href="{% url 'view_bills' %}">Bills </a>
@@ -111,6 +126,47 @@
   <!-- jQuery and Bootstrap JS -->
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+  <script>
+    //Goals progress bars
+    document.addEventListener("DOMContentLoaded", function() {
+      const progressBar = document.getElementById("progress-bar");
+      const progress = parseFloat(progressBar.getAttribute("aria-valuenow"));
+  
+      // Set the width property based on the progress value
+      progressBar.style.width = progress + "%";
+  
+      // Apply the CSS classes based on the progress value
+      if (progress < 25) {
+        progressBar.classList.add("progress-bar-red");
+      } else if (progress < 75) {
+        progressBar.classList.add("progress-bar-orange");
+      } else {
+        progressBar.classList.add("progress-bar-green");
+      }
+    });
+
+    //USer Profile Progress bars
+    document.addEventListener("DOMContentLoaded", function() {
+    const setProgressBarWidth = (progressBar, progress) => {
+      progressBar.style.width = progress + "%";
+    };
+
+    const incomeProgressBar = document.getElementById("income-progress-bar");
+    const incomeProgress = parseFloat(incomeProgressBar.getAttribute("aria-valuenow"));
+    setProgressBarWidth(incomeProgressBar, incomeProgress);
+    incomeProgressBar.classList.add("progress-bar-primary");
+
+    const expenseProgressBar = document.getElementById("expense-progress-bar");
+    const expenseProgress = parseFloat(expenseProgressBar.getAttribute("aria-valuenow"));
+    setProgressBarWidth(expenseProgressBar, expenseProgress);
+    expenseProgressBar.classList.add("progress-bar-red");
+
+    const savingsProgressBar = document.getElementById("savings-progress-bar");
+    const savingsProgress = parseFloat(savingsProgressBar.getAttribute("aria-valuenow"));
+    setProgressBarWidth(savingsProgressBar, savingsProgress);
+    savingsProgressBar.classList.add("progress-bar-green");
+  });
+  </script>
   
   
 </body>

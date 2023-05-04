@@ -1,10 +1,24 @@
 {% extends 'money/base.html' %}
 
 {% block content %}
-<h1>Edit Budget</h1>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Update Budget</button>
-</form>
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-center">Edit Budget</h2>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary btn-block">Update Budget</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

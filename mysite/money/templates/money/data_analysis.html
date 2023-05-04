@@ -57,6 +57,7 @@
     <table class="table table-striped">
       <thead class="bg-primary text-white">
         <tr>
+          <th scope="col">Source</th> 
           <th scope="col">Amount</th>
           <th scope="col">Date</th>
           <th scope="col">Frequency</th>
@@ -65,6 +66,7 @@
       <tbody>
         {% for income in income_list %}
         <tr>
+          <td>{{ income.source }}</td> 
           <td>{{ income.amount }}</td>
           <td>{{ income.date }}</td>
           <td>{{ income.frequency }}</td>

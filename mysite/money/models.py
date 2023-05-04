@@ -18,6 +18,7 @@ class Subcategory(models.Model):
 
 class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    source = models.CharField(max_length=255, null=True) 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
     frequency = models.CharField(max_length=255)
@@ -44,3 +45,24 @@ class Budget(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
     end_date = models.DateField()
+    
+
+class Goal(models.Model):
+    CATEGORY_CHOICES = [
+        ('savings', 'Savings'),
+        ('investments', 'Investments'),
+        ('debt_reduction', 'Debt Reduction'),
+        # Add more categories as needed
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    target_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    target_date = models.DateField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='savings') # Add default value
+    current_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return self.title
+
